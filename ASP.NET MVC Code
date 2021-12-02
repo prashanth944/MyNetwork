@@ -1,0 +1,49 @@
+//MVC LOgin & Registration with Database credentials 
+
+ public class LoginController : Controller
+    {
+        LoginContext LoginContext = new LoginContext();
+
+        // GET: Login
+        public ActionResult Login()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public ActionResult Login(User user)
+        {
+            if (ModelState.IsValid)
+            {
+                bool IsValidUser = LoginContext.Users.Any(u => u.Username.ToLower() == user.Username.ToLower() && user.Password == user.Password);
+                if(IsValidUser)
+                {
+                    return RedirectToAction("Welcome");
+                }
+            }
+            ModelState.AddModelError("","Invalid User please try again");
+            return View();
+        }
+        public ActionResult Welcome()
+        {
+            return View();
+        }
+
+        public ActionResult Register()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public ActionResult Register(User reg)
+        {
+            if (ModelState.IsValid)
+            {
+                LoginContext.Users.Add(reg);
+                LoginContext.SaveChanges();
+                return RedirectToAction("Login");
+            }
+            return View();
+        }
+    }
+
