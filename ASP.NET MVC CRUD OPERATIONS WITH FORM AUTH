@@ -1,0 +1,94 @@
+// Add the authentication in Web.Config
+
+<authentication mode="Forms">
+      <forms loginUrl="Accounts/Login"></forms>
+</authentication>
+
+
+// Add code Login  with Authentication 
+
+public class HomeController : Controller
+    {
+      private   ASPDOTNETMVCEntities db = new ASPDOTNETMVCEntities();
+
+        [HttpGet]
+        public ActionResult Login()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public ActionResult Login(User user1)
+        {
+            if(ModelState.IsValid)
+            {
+                if(db.Users.Any(user=>user.Username.ToLower() == user1.Username.ToLower() && user.Password == user1.Password))
+                {
+                //using System.Web.Security;
+                    FormsAuthentication.SetAuthCookie(user1.Username, false);
+                    RedirectToAction("GetEmployees", "Home");
+                }
+                else
+                {
+                    ModelState.AddModelError("", "Invalid Credentials Please try Again");
+                    return View();
+                }
+            }
+            
+            return View();
+        }
+        [HttpGet]
+        public ActionResult AddNewEmployee()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public ActionResult AddNewEmployee(Employee employee)
+        {
+            db.Employees.Add(employee);
+            db.SaveChanges();
+            return RedirectToAction("GetEmployees", "Home");
+        }
+
+        [HttpGet]
+        [Authorize]
+        public ActionResult GetEmployees()
+        {
+            return View(db.Employees.ToList());
+        }
+        [HttpGet]
+        public ActionResult GetEmployeeById(int id)
+        {
+            return View(db.Employees.Find(id));
+        }
+        [HttpGet]
+        public ActionResult EditEmployee()
+        {
+            return View();
+        }
+        [Authorize]
+        public ActionResult Logout()
+        {
+            FormsAuthentication.SignOut();
+            return RedirectToAction("Login", "Home");
+        }
+
+        [HttpPost]
+        [Authorize]
+        public ActionResult EditEmployee(int id , Employee employee)
+        {
+            db.Entry(employee).State = System.Data.Entity.EntityState.Modified;
+            db.SaveChanges();
+
+            return RedirectToAction("GetEmployees", "Home");
+        }
+
+        public ActionResult DeleteEmployee(int id)
+        {
+            db.Employees.Remove(db.Employees.Find(id));
+            db.SaveChanges();
+
+            return RedirectToAction("GetEmployees", "Home");
+        }
+    }
