@@ -1,0 +1,25 @@
+ //add The startip.cs services.AddMemoryCache();
+ 
+ using Microsoft.Extensions.Caching.Memory;
+ private readonly IMemoryCache _memoryCache;
+ public BaysController(IConfiguration configuration, ILogger<BaysController> logger, IMemoryCache memoryCache)
+        {
+            this._configuration = configuration;
+            this._logger = logger;
+            this._memoryCache = memoryCache;
+        }
+ 
+ List<MasterRecords> data = new List<MasterRecords>();
+                
+                if (!_memoryCache.TryGetValue("mykey", out data))
+                {
+                    BayPlanning bayPlanning = new BayPlanning();
+                    data = bayPlanning.GetBayStatusDDL(GetConnectionString());
+                    this._memoryCache.Set("mykey", data);
+                }
+                else
+                  data = this._memoryCache.Get("mykey") as List<MasterRecords>;
+                if (data.Count > 0)
+                    return Ok(data);
+                else
+                    return NotFound(new { Value = "Record not found! Please Try Again" });
